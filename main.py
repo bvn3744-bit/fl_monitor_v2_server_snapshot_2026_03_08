@@ -64,11 +64,15 @@ def main() -> None:
                     logger.exception("AI analysis failed for project %s: %s", project_id, exc)
                     ai_text = None
 
+            if ai_text and "🔴" in ai_text:
+                save_processed(db_path, project)
+                logger.info("Проект %s — вердикт 🔴, пропускаем.", project_id)
+                continue
+
             if ai_text:
                 sent = send_text(bot_token, chat_id, ai_text)
             else:
                 sent = send_project(bot_token, chat_id, project)
-
             if sent:
                 save_processed(db_path, project)
                 logger.info("Проект %s отправлен и сохранён.", project_id)
