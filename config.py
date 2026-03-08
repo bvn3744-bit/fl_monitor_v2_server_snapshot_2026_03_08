@@ -16,6 +16,8 @@ def load_config() -> dict:
         "CHECK_INTERVAL_SECONDS": int(os.getenv("CHECK_INTERVAL_SECONDS", "60")),
         "DATABASE_PATH": os.getenv("DATABASE_PATH", "fl_monitor.db"),
         "SOURCE_URL": os.getenv("SOURCE_URL", "https://www.fl.ru/projects/"),
+        "CLAUDE_API_KEY": os.getenv("CLAUDE_API_KEY", ""),
+        "CLAUDE_MODEL": os.getenv("CLAUDE_MODEL", ""),
     }
 
     # Минимальная валидация

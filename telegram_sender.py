@@ -86,3 +86,16 @@ def send_project(bot_token: str, chat_id: str, project: dict) -> bool:
             return False
 
     return True
+
+
+def send_text(bot_token: str, chat_id: str, text: str) -> bool:
+    """Отправляет произвольный текст в Telegram с разбиением на части."""
+    parts = split_message(text)
+    if not parts:
+        return True
+
+    for part in parts:
+        if not _send_part(bot_token, chat_id, part):
+            return False
+
+    return True
