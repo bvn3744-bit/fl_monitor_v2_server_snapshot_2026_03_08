@@ -72,7 +72,7 @@ def analyze_project(
     project: dict,
     api_key: str,
     model: Optional[str] = None,
-    timeout: int = 20,
+    timeout: int = 60,
 ) -> Optional[str]:
     """Отправляет проект в Claude API и возвращает текст аналитической карточки.
 
