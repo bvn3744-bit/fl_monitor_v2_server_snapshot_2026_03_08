@@ -49,7 +49,7 @@ def split_message(text: str, limit: int = 4000) -> list[str]:
 def _send_part(bot_token: str, chat_id: str, text: str) -> bool:
     """Отправляет одну часть сообщения с retry."""
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": text}
+    payload = {"chat_id": chat_id, "text": text, "disable_web_page_preview": True}
     delays = [2, 4, 6]
 
     for attempt in range(3):

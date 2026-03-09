@@ -1,3 +1,4 @@
 .env 
 __pycache__/ 
 fl_monitor.db 
+*.log

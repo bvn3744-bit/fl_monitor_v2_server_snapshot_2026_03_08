@@ -1,6 +1,7 @@
 """Точка входа приложения FL Monitor v2."""
 
 import logging
+import re
 import time
 
 from config import load_config
@@ -26,12 +27,23 @@ def main() -> None:
     claude_model = config.get("CLAUDE_MODEL", "")
 
     init_db(db_path)
+    send_text(bot_token, chat_id, "🟢 FL Monitor запущен")
+
+    parse_error_streak = 0
+    hourly_count = 0
+    last_heartbeat = time.time()
 
     while True:
         try:
             projects = fetch_projects(source_url)
+            parse_error_streak = 0
         except Exception as exc:
             logger.error("Ошибка при получении проектов: %s", exc)
+            parse_error_streak += 1
+            if parse_error_streak >= 3:
+                send_text(bot_token, chat_id, "🔴 Ошибка парсера 3 раза подряд. Проверьте сервер.")
+                logger.error("Отправлено уведомление об ошибке парсера.")
+                parse_error_streak = 0
             time.sleep(20)
             continue
 
@@ -70,14 +82,29 @@ def main() -> None:
                 continue
 
             if ai_text:
+                match = re.search(r'(\d+)\s*%', ai_text)
+                confidence = int(match.group(1)) if match else 0
+                if confidence < 80:
+                    save_processed(db_path, project)
+                    logger.info("Проект %s — уверенность %d%%, пропускаем.", project_id, confidence)
+                    continue
+
+            if ai_text:
                 sent = send_text(bot_token, chat_id, ai_text)
             else:
                 sent = send_project(bot_token, chat_id, project)
             if sent:
                 save_processed(db_path, project)
+                hourly_count += 1
                 logger.info("Проект %s отправлен и сохранён.", project_id)
             else:
                 logger.error("Не удалось отправить проект %s.", project_id)
+
+        if time.time() - last_heartbeat >= 3600:
+            send_text(bot_token, chat_id, f"💓 Монитор работает. Обработано за час: {hourly_count} проектов")
+            logger.info("Heartbeat отправлен. Обработано за час: %d", hourly_count)
+            hourly_count = 0
+            last_heartbeat = time.time()
 
         time.sleep(20)
 
